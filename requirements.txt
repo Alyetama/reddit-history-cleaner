@@ -1,0 +1,3 @@
+loguru>=0.5.3
+selenium>=4.0.0.b4
+tqdm>=4.56.2
