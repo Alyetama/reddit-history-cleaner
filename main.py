@@ -2,15 +2,17 @@
 # coding: utf-8
 
 import os
-import time
 import shutil
 import signal
 import sys
+import time
 from getpass import getpass
 
 from loguru import logger
 from selenium import webdriver
-from selenium.common.exceptions import ElementClickInterceptedException, ElementNotInteractableException, StaleElementReferenceException, TimeoutException
+from selenium.common.exceptions import ElementClickInterceptedException, \
+    ElementNotInteractableException, StaleElementReferenceException, \
+    TimeoutException
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as ec
@@ -18,10 +20,10 @@ from selenium.webdriver.support.ui import WebDriverWait
 from tqdm import tqdm
 
 
-def keyboard_interrupt_handler(sig, frame):
+def keyboard_interrupt_handler(sig, frame):  # noqa
     logger.info(f'KeyboardInterrupt exception has been caught...')
     try:
-        driver.quit()
+        driver.quit()  # noqa
         logger.info('Terminated chromedriver gracefully...')
     except NameError:
         pass
@@ -33,7 +35,7 @@ def debugger(msg):
         logger.exception(msg)
 
 
-def main(disable_headless=False, debug=False):
+def main(disable_headless=False):
     username = input('Username: ')
     passwd = getpass()
 
@@ -43,7 +45,8 @@ def main(disable_headless=False, debug=False):
         try:
             selected_option = int(
                 input(
-                    'Remove:\n  1. Comments only\n  2. Posts only\n  3. Comments and posts\nChoice: '
+                    'Remove:\n  1. Comments only\n  2. Posts only\n  3. '
+                    'Comments and posts\nChoice: '
                 ))
             break
         except ValueError:
@@ -63,7 +66,7 @@ def main(disable_headless=False, debug=False):
     options = webdriver.ChromeOptions()
     if not disable_headless:
         options.add_argument('headless')
-    driver = webdriver.Chrome(options=options, service=service)
+    driver = webdriver.Chrome(options=options, service=service)  # noqa
     driver.get(f'https://old.reddit.com/user/{username}/')
 
     for e in driver.find_elements(By.TAG_NAME, 'input'):
@@ -93,7 +96,8 @@ def main(disable_headless=False, debug=False):
             except AssertionError as err:
                 debugger(err)
                 logger.error(
-                    f'AssertionError: The current page URL does not match the task!'
+                    f'AssertionError: The current page URL does not match '
+                    'the task!'
                 )
                 break
             entries = driver.find_element(By.ID, 'siteTable').find_elements(
@@ -124,7 +128,8 @@ def main(disable_headless=False, debug=False):
                         e = 1
                     if e > 50:
                         logger.error(
-                            'Something is not right...\nRun again with `--disable-headless` flag.'
+                            'Something is not right...\nRun again with the '
+                            '`--disable-headless` flag.'
                         )
                         logger.info('Terminating...')
                         driver.quit()
@@ -133,9 +138,9 @@ def main(disable_headless=False, debug=False):
                     logger.warning(
                         f'⚠️ Failed to remove an item... but will try again...'
                     )
-
+        logger.info('✅ Done!\n')
         logger.info(
-            f'✅ Done!\n🗑️ Removed {n} {page.replace("submitted", "posts")[:-1]}(s).'
+            f'🗑️ Removed {n}{page.replace("submitted", "posts")[:-1]}(s).'
         )
     driver.quit()
 
@@ -143,14 +148,14 @@ def main(disable_headless=False, debug=False):
 if __name__ == '__main__':
     logger.add('reddit_cleaner.log')
     logger.info(f'Saving logs to {os.getcwd()}/reddit_cleaner.log')
-    disable_headless = False
+    open_browser = False
     debug = False
     if len(sys.argv) > 1:
         if '--disable-headless' in sys.argv:
-            disable_headless = True
+            open_browser = True
         if '--debug' in sys.argv:
             debug = True
-    logger.info(f'Headless mode is disabled: {disable_headless}')
+    logger.info(f'Headless mode is disabled: {open_browser}')
     logger.info(f'Debugging mode: {debug}')
 
-    main(disable_headless=disable_headless, debug=debug)
+    main(disable_headless=open_browser)
