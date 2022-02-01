@@ -140,7 +140,7 @@ def main(disable_headless=False):
                     )
         logger.info('✅ Done!\n')
         logger.info(
-            f'🗑️ Removed {n}{page.replace("submitted", "posts")[:-1]}(s).'
+            f'🗑️ Removed {n} {page.replace("submitted", "posts")[:-1]}(s).'
         )
     driver.quit()
 
