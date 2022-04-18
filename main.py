@@ -10,9 +10,7 @@ from getpass import getpass
 
 from loguru import logger
 from selenium import webdriver
-from selenium.common.exceptions import ElementClickInterceptedException, \
-    ElementNotInteractableException, StaleElementReferenceException, \
-    TimeoutException
+from selenium.common import exceptions as exc
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as ec
@@ -44,10 +42,8 @@ def main(disable_headless=False):
     while True:
         try:
             selected_option = int(
-                input(
-                    'Remove:\n  1. Comments only\n  2. Posts only\n  3. '
-                    'Comments and posts\nChoice: '
-                ))
+                input('Remove:\n  1. Comments only\n  2. Posts only\n  3. '
+                      'Comments and posts\nChoice: '))
             break
         except ValueError:
             logger.warning('Enter numerical values only (1, 2, or 3)!')
@@ -97,14 +93,13 @@ def main(disable_headless=False):
                 debugger(err)
                 logger.error(
                     f'AssertionError: The current page URL does not match '
-                    'the task!'
-                )
+                    'the task!')
                 break
             entries = driver.find_element(By.ID, 'siteTable').find_elements(
                 By.CLASS_NAME, 'thing')
             if not entries:
                 break
-            for entry in tqdm(entries, desc='Running checks'):
+            for entry in tqdm(entries, desc='Running some cleaning'):
                 try:
                     el = WebDriverWait(entry, 2).until(
                         ec.presence_of_element_located(
@@ -116,21 +111,20 @@ def main(disable_headless=False):
                             (By.CLASS_NAME, 'yes'))).click()
                     n += 1
                     e = 0
-                except (ElementClickInterceptedException,
-                        ElementNotInteractableException,
-                        StaleElementReferenceException,
-                        TimeoutException) as exc:
-                    debugger(exc)
+                except (exc.ElementClickInterceptedException,
+                        exc.ElementNotInteractableException,
+                        exc.StaleElementReferenceException,
+                        exc.TimeoutException) as e:
+                    debugger(e)
                     try:
                         e += 1
-                    except UnboundLocalError as exc:
-                        debugger(exc)
+                    except UnboundLocalError as e:
+                        debugger(e)
                         e = 1
                     if e > 50:
                         logger.error(
                             'Something is not right...\nRun again with the '
-                            '`--disable-headless` flag.'
-                        )
+                            '`--disable-headless` flag.')
                         logger.info('Terminating...')
                         driver.quit()
                         sys.exit(1)
@@ -140,8 +134,7 @@ def main(disable_headless=False):
                     )
         logger.info('✅ Done!\n')
         logger.info(
-            f'🗑️ Removed {n} {page.replace("submitted", "posts")[:-1]}(s).'
-        )
+            f'🗑️ Removed {n} {page.replace("submitted", "posts")[:-1]}(s).')
     driver.quit()
 
 
